@@ -3,16 +3,16 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.9
-      docker: 20
+      python: 3.11
     commands:
+      - echo Installing dependencies...
       - pip install -r requirements.txt
 
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-      - $(aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin <your_account_id>.dkr.ecr.<your_region>.amazonaws.com)
+      - $(aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 643426214971.dkr.ecr.ap-south-1.amazonaws.com)
       - REPO_URI=<your_account_id>.dkr.ecr.<your_region>.amazonaws.com/flask-app
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo Running tests...
@@ -20,13 +20,14 @@ phases:
 
   build:
     commands:
-      - echo Building the Docker image...
+      - echo Building Docker image...
       - docker build -t $REPO_URI:$IMAGE_TAG .
 
   post_build:
     commands:
-      - echo Pushing the Docker image...
+      - echo Pushing Docker image to ECR...
       - docker push $REPO_URI:$IMAGE_TAG
+      - echo Writing image definitions...
       - printf '[{"name":"flask-app","imageUri":"%s"}]' $REPO_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
