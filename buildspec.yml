@@ -15,15 +15,12 @@ phases:
 
   build:
     commands:
-      - echo Building Docker image...
       - docker build -t mywebapp:latest .
 
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
       - docker tag mywebapp:latest 643426214971.dkr.ecr.ap-south-1.amazonaws.com/codedeployrepo:latest
       - docker push 643426214971.dkr.ecr.ap-south-1.amazonaws.com/codedeployrepo:latest
-      - echo Writing image definitions...
       - printf '[{"name":"flask-app","imageUri":"%s"}]' $REPO_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
